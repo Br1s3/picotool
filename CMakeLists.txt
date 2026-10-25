@@ -147,7 +147,7 @@ if (NOT PICOTOOL_NO_LIBUSB)
             )
 
     set(FLASH_ID_BIN ${CMAKE_BINARY_DIR}/picoboot_flash_id/flash_id.bin)
-
+########################################################### FAIT
     # We want to generate headers from WELCOME.HTM etc.
     ExternalProject_Add(otp_header_parser
             PREFIX otp_header_parser
@@ -204,7 +204,7 @@ if (NOT PICOTOOL_NO_LIBUSB)
                 DEPENDS ${GENERATED_JSON}
                 COMMENT "Configuring rp2350.json.h"
                 VERBATIM)
-              
+########################################################### FAIT
     endif()
 endif()
 
@@ -252,7 +252,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/flash_id_bin.h
         DEPENDS flash_id
         COMMENT "Configuring flash_id_bin.h"
         VERBATIM)
-
+########################################################### FAIT
 add_subdirectory(model)
 add_subdirectory(errors)
 
@@ -279,7 +279,7 @@ add_subdirectory(${PICO_SDK_PATH}/src/host/pico_platform pico_platform)
 
 add_library(regs_headers INTERFACE)
 target_include_directories(regs_headers INTERFACE ${PICO_SDK_PATH}/src/rp2350/hardware_regs/include)
-
+########################################################### FAIT
 # Main picotool executable
 add_executable(picotool
     data_locs.cpp
