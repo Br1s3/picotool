@@ -38,9 +38,9 @@
 #if HAS_LIBUSB
     #include "picoboot_connection_cxx.h"
     #include "get_xip_ram_perms.h"
-    #include "lfs.h"
-    #include "ff.h"
-    #include "diskio.h"
+    #include "usb/lfs.h"
+    #include "usb/ff.h"
+    #include "usb/diskio.h"
 #else
     #include "picoboot_connection.h"
 #endif

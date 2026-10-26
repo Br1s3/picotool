@@ -1,6 +1,7 @@
 build/*
 build-*
 bazel-*
-
+picotool
+*.o
 # Ignore until https://github.com/bazelbuild/bazel/issues/20369 is fixed.
 MODULE.bazel.lock
