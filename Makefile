@@ -4,39 +4,49 @@ GPP  = g++
 GCC  = gcc
 RM   = rm -rf
 
-OTP_EXEC ?= otp.cpp
-# or no_otp.cpp
-OTP_EXEO ?= otp.o
-# or no_otp.o
 
-MBEDTLS ?= HAS_MBEDTLS=0
+PICOVERSION  = PICOTOOL_VERSION=\"2.3.1\"
+SYSTEMVERS   = SYSTEM_VERSION=\"host\"
+COMPILERINFO = COMPILER_INFO=\"local\"
+PICOSUPPORT  = SUPPORT_RP2350_A2=1
+PICOCODEOTP  = CODE_OTP=0
+
+OTPCPP ?= otp.cpp
+# or no_otp.cpp
+
+MBEDTLS ?= HAS_MBEDTLS=1
 # or HAS_MBEDTLS=1
-LIBUSB ?= HAS_LIBUSB=1
+
+# This macro is useful if you want USB support
+LIBUSB ?= HAS_LIBUSB=0
 # or HAS_LIBUSB=1
 
-MUSTPICOTOOLC  += \
-whereami++.cpp  \
-model.cpp       \
-elf_file.cpp    \
-elf2uf2.cpp     \
-bintool.cpp     \
-errors.cpp
 
-MUSTPICOTOOLO  = $(MUSTPICOTOOLC:.cpp=.o)
+SNIPPETSRCCPP      += \
+whereami++.cpp        \
+model.cpp             \
+elf_file.cpp          \
+elf2uf2.cpp           \
+bintool.cpp           \
+errors.cpp            \
+get_xip_ram_perms.cpp
 
-MUSTLIBUSBC    +=\
-usb/ff.c         \
-usb/lfs.c        \
-usb/lfs_util.c
+SNIPPETSRCOBJ  = $(SNIPPETSRCCPP:.cpp=.o)
 
+USBC                 +=\
+usb/ff.c               \
+usb/ffunicode.c        \
+usb/lfs.c              \
+usb/lfs_util.c         \
+picoboot_connection.c
 
-MUSTLIBUSBO    = $(MUSTLIBUSBC:.c=.o)
+USBOBJ    = $(USBC:.c=.o)
 
-SRC                  +=\
-$(MUSTPICOTOOLC)       \
+SRCCPP               +=\
+$(SNIPPETSRCCPP)       \
 data_locs.cpp          \
 get_enc_bootloader.cpp \
-$(OTP_EXEC)
+$(OTPCPP)
 
 
 CFLAGS                    +=\
@@ -48,50 +58,46 @@ CFLAGS                    +=\
 
 EXEC = picotool
 
-PICOVERSION  = PICOTOOL_VERSION=\"2.3.1\"
-SYSTEMVERS   = SYSTEM_VERSION=\"host\"
-COMPILERINFO = COMPILER_INFO=\"local\"
-PICOSUPPORT  = SUPPORT_RP2350_A2=1
-PICOCODEOTP  = CODE_OTP=0
-
 .PHONY: install clean
 
 
 ifeq ($(LIBUSB), HAS_LIBUSB=1)
 LDFLAGS                     +=\
 -lusb-1.0
+
 CFLAGS                      +=\
 -I/usr/include/libusb-1.0
-SRC                         +=\
-picoboot_connection_cxx.cpp   \
+
+SRCCPP                      +=\
+picoboot_connection_cxx.cpp
+
+SNIPPETSRCOBJ               +=\
+picoboot_connection.o
+endif
+
+SRCCPP                      +=\
 main.cpp
-OBJ                          = $(SRC:.cpp=.o)
-ALLOBJ = $(MUSTLIBUSBO) $(OBJ)
+
+OBJ                          = $(SRCCPP:.cpp=.o)
+
+ifeq ($(LIBUSB), HAS_LIBUSB=1)
+ALLOBJ                       = $(USBOBJ) $(OBJ)
 else
-SRC                         +=\
-main.cpp
-OBJ                          = $(SRC:.cpp=.o)
-ALLOBJ = $(OBJ)
+ALLOBJ                       = $(OBJ)
 endif
 
 install: $(EXEC)
 
 $(EXEC): $(ALLOBJ)
 	$(GPP) $^ -o $(EXEC) $(LDFLAGS)
-	# $(GPP) -Wl,--verbose $^ -o $(EXEC)
-
 
 ifeq ($(LIBUSB), HAS_LIBUSB=1)
-$(MUSTLIBUSBO): usb/%.o: usb/%.c
+$(USBOBJ): %.o: %.c
 	$(GCC) -std=c11 -c $< -o $@ $(CFLAGS) -D$(LIBUSB)
 endif
-
-# Need to had that to $(MUSTLIBUSBO) when compile the executable !!
-picoboot_connection.o: picoboot_connection.c
-	$(GCC) -c $< -o $@ $(CFLAGS) -D$(LIBUSB)
 
 $(OBJ): %.o: %.cpp
 	$(GPP) -c $< -o $@ $(CFLAGS) -D$(PICOVERSION) -D$(SYSTEMVERS) -D$(COMPILERINFO) -D$(PICOSUPPORT) -D$(PICOCODEOTP) -D$(MBEDTLS) -D$(LIBUSB)
 
 clean:
-	$(RM) $(EXEC) $(OBJ) $(MUSTLIBUSBO)
+	$(RM) $(EXEC) $(ALLOBJ)
