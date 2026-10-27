@@ -14,11 +14,11 @@ PICOCODEOTP  = CODE_OTP=0
 OTPCPP ?= otp.cpp
 # or no_otp.cpp
 
-MBEDTLS ?= HAS_MBEDTLS=1
+# This macro does not compile yet
+MBEDTLS ?= HAS_MBEDTLS=0
 # or HAS_MBEDTLS=1
 
-# This macro is useful if you want USB support
-LIBUSB ?= HAS_LIBUSB=0
+LIBUSB ?= HAS_LIBUSB=1
 # or HAS_LIBUSB=1
 
 
